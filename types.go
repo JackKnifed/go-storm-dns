@@ -19,7 +19,6 @@ type dnsRec struct {
 type soaRec struct {
 	name string
 	ttl int
-	const recTyep := "SOA"
 	primary string
 	contact string
 	serial int
@@ -71,6 +70,36 @@ func (dnsRec) String() (string) {
 					dnsRec.type,
 					'"' + dnsRec.value + '"'
 				}, "\t")
+		} else {
+		case "A", "AAAA", "NS", "CNAME":
+			return strings.Join(
+				[]string{
+					dnsRec.name,
+					string(dnsRec.ttl),
+					"IN",
+					dnsRec.type,
+					dnsRec.value
+				}, "\t")
+		case "MX":
+			return strings.Join(
+				[]string{
+					dnsRec.name,
+					string(dnsRec.ttl),
+					"IN",
+					dnsRec.type,
+					dnsRec.priority,
+					dnsRec.value
+				}, "\t")
+		case "TXT":
+			return strings.Join(
+				[]string{
+					dnsRec.name,
+					string(dnsRec.ttl),
+					"IN",
+					dnsRec.type,
+					'"' + dnsRec.value + '"'
+				}, "\t")
+
 		}
 	}
 }
