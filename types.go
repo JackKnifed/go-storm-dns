@@ -50,35 +50,37 @@ func (dnsRec) String() (string) {
 				[]string{
 					dnsRec.name,
 					"IN",
-					dnsRec.type,
-					dnsRec.value
+					dnsRec.recType,
+					dnsRec.value,
 				}, "\t")
 		case "MX":
 			return strings.Join(
 				[]string{
 					dnsRec.name,
 					"IN",
-					dnsRec.type,
+					dnsRec.recType,
 					dnsRec.priority,
-					dnsRec.value
+					dnsRec.value,
 				}, "\t")
 		case "TXT":
 			return strings.Join(
 				[]string{
 					dnsRec.name,
 					"IN",
-					dnsRec.type,
-					'"' + dnsRec.value + '"'
+					dnsRec.recType,
+					'"' + dnsRec.value + '"',
 				}, "\t")
-		} else {
+		}
+	} else {
+		switch dnsRec.recType {
 		case "A", "AAAA", "NS", "CNAME":
 			return strings.Join(
 				[]string{
 					dnsRec.name,
 					string(dnsRec.ttl),
 					"IN",
-					dnsRec.type,
-					dnsRec.value
+					dnsRec.recType,
+					dnsRec.value,
 				}, "\t")
 		case "MX":
 			return strings.Join(
@@ -86,9 +88,9 @@ func (dnsRec) String() (string) {
 					dnsRec.name,
 					string(dnsRec.ttl),
 					"IN",
-					dnsRec.type,
+					dnsRec.recType,
 					dnsRec.priority,
-					dnsRec.value
+					dnsRec.value,
 				}, "\t")
 		case "TXT":
 			return strings.Join(
@@ -96,12 +98,58 @@ func (dnsRec) String() (string) {
 					dnsRec.name,
 					string(dnsRec.ttl),
 					"IN",
-					dnsRec.type,
-					'"' + dnsRec.value + '"'
+					dnsRec.recType,
+					'"' + dnsRec.value + '"',
 				}, "\t")
 
 		}
 	}
+}
+
+// determines if the input contains a comment next
+// if it does
+func sliceComment(input []byte) ([]byte, int) {
+	pos := 0
+	for pos < len(input) {
+		switch{
+		case unicode.IsSpace(input[pos]):
+			pos++
+		case input[pos] == '#':
+			if bytes.Index(input[pos:]) != -1{
+				pos += bytes.Index(input[pos:], "\n")
+				pos++
+			} else {
+				return []byte(""), -1
+			}
+		case input[pos] == '/':
+			switch input[pos+1] {
+			case '/':
+				if bytes.Index(input[pos:], "\n") != -1{
+					pos += bytes.Index(input[pos:], "\n")
+					pos++
+				} else {
+					return []byte(""), -1
+				}
+			case '*':
+				if bytes.Index(input[pos:], "*/") != -1{
+					pos += bytes.Index(input[pos:], "*/")
+					pos++
+					pos++
+				} else {
+					return []byte(""), -1
+				}
+			default:
+				pos++
+			}
+		default:
+			return bytes.TrimSpace(input[:pos]), pos+1
+		}
+	}
+	return []byte(""), -1
+}
+
+//Finds the first DNS record 
+func readDnsRec(input []byte) (dnsRec, int, err) {
 }
 
 func (*zone) isRec(input []byte) err {
