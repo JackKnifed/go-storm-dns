@@ -31,7 +31,7 @@ type soaRec struct {
 type fqdn struct {
 	parentPart string
 	localPart string
-	records []dnsRec
+	records []interface{}
 	subdomains []fqdn
 }
 
@@ -106,8 +106,10 @@ func (dnsRec) String() (string) {
 	}
 }
 
-// determines if the input contains a comment next
-// if it does
+// determines if the input contains a comment next, and trims whitespace
+// if it does, returns that
+// also returns the address of the next non-comment, non-whitespace character in the input
+// returns "" and -1 if comment not finished, or no valid data in input
 func sliceComment(input []byte) ([]byte, int) {
 	pos := 0
 	for pos < len(input) {
@@ -148,8 +150,39 @@ func sliceComment(input []byte) ([]byte, int) {
 	return []byte(""), -1
 }
 
+// determine the position of the next whitespace in a string
+func wordLength(input []byte) int {
+	i := 0
+	for i < length(input) {
+		if unicode.IsSpace(input[i]) {
+			return i + 1
+		} else {
+			i++
+		}
+	}
+	return -1
+}
+
+func validDomainName(input []byte) {
+
+}
+
 //Finds the first DNS record 
 func readDnsRec(input []byte) (dnsRec, int, err) {
+	rv := new(dnsRec)
+	processed := 0
+	if comment, i := sliceComment(input); i > -1 {
+		rv.comment = comment
+		input = input[processed:]
+		processed += i
+	}
+	if i := wordLength(input); i > -1 {
+		// there was a domain name in the input
+		name := input[:i]
+
+
+	}
+
 }
 
 func (*zone) isRec(input []byte) err {
