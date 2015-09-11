@@ -159,3 +159,21 @@ func parseRecord(input []byte) (bytesEaten int, err error) {
 		}
 	}
 }
+
+//Finds the first DNS record 
+func readDnsRec(input []byte) (dnsRec, int, err) {
+	rv := new(dnsRec)
+	processed := 0
+	if comment, i := sliceComment(input); i > -1 {
+		rv.comment = comment
+		input = input[processed:]
+		processed += i
+	}
+	if i := wordLength(input); i > -1 {
+		// there was a domain name in the input
+		name := input[:i]
+
+
+	}
+
+}
