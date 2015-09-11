@@ -28,6 +28,45 @@ type soaRec struct {
 	minimum int
 }
 
+func (*zone) checkPosInt(input string) bool {
+	if val, ok := strconv.Atoi(input); ok && val > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (*zone) validSoa(input soaRec) bool {
+	if ! zone.validDomain(input.name) {
+		return false
+	}
+	if ! zone.isPosInt(input.ttl) {
+		return false
+	}
+	if ! zone.validDomain(input.primary) {
+		return false
+	}
+	if ! zone.validDomain(input.contact) {
+		return false
+	}
+	if ! zone.isPosInt(input.serial)
+		return false
+	}
+	if ! zone.isPosInt(input.refresh)
+		return false
+	}
+	if ! zone.isPosInt(input.retry)
+		return false
+	}
+	if ! zone.isPosInt(input.expire)
+		return false
+	}
+	if ! zone.isPosInt(input.minimum)
+		return false
+	}
+	return true
+}
+
 type fqdn struct {
 	parentPart string
 	localPart string
@@ -106,83 +145,44 @@ func (dnsRec) String() (string) {
 	}
 }
 
-// determines if the input contains a comment next, and trims whitespace
-// if it does, returns that
-// also returns the address of the next non-comment, non-whitespace character in the input
-// returns "" and -1 if comment not finished, or no valid data in input
-func sliceComment(input []byte) ([]byte, int) {
-	pos := 0
-	for pos < len(input) {
-		switch{
-		case unicode.IsSpace(input[pos]):
-			pos++
-		case input[pos] == '#':
-			if bytes.Index(input[pos:]) != -1{
-				pos += bytes.Index(input[pos:], "\n")
-				pos++
-			} else {
-				return []byte(""), -1
-			}
-		case input[pos] == '/':
-			switch input[pos+1] {
-			case '/':
-				if bytes.Index(input[pos:], "\n") != -1{
-					pos += bytes.Index(input[pos:], "\n")
-					pos++
-				} else {
-					return []byte(""), -1
-				}
-			case '*':
-				if bytes.Index(input[pos:], "*/") != -1{
-					pos += bytes.Index(input[pos:], "*/")
-					pos++
-					pos++
-				} else {
-					return []byte(""), -1
-				}
-			default:
-				pos++
-			}
-		default:
-			return bytes.TrimSpace(input[:pos]), pos+1
+func RewZone(soa soaRec) {
+
+}
+
+func (*zone) validIP4(input string) bool {
+	parts := strings.Split(input, ".")
+	if len(parts) != 4 {
+		return false
+	}
+	for _, piece := range parts {
+		if part > 255 || part < 0 {
+			return false
 		}
 	}
-	return []byte(""), -1
+	return true
 }
 
-// determine the position of the next whitespace in a string
-func wordLength(input []byte) int {
-	i := 0
-	for i < length(input) {
-		if unicode.IsSpace(input[i]) {
-			return i + 1
-		} else {
-			i++
+func (*zone) validIP6(input string) bool {
+	result := net.ParseIP([]byte(input))
+	if result != nil {
+		return true
+	}
+	return false
+}
+
+// written per spec https://tools.ietf.org/html/rfc1035
+func (*zone) validDomain(input string) bool {
+	parts := strings.Split(strings.ToLower(input), ".")
+	for _, part := range parts {
+		if len(part) > 0{
+	 		if !unicode.IsLetter(part[0]) {
+				return false
+			} else if !unicode.IsLetter(part[len(part)-1]) && !unicode.IsDigit(part[len(part)-1]) {
+				return false
+			}
 		}
 	}
-	return -1
-}
-
-func validDomainName(input []byte) {
-
-}
-
-//Finds the first DNS record 
-func readDnsRec(input []byte) (dnsRec, int, err) {
-	rv := new(dnsRec)
-	processed := 0
-	if comment, i := sliceComment(input); i > -1 {
-		rv.comment = comment
-		input = input[processed:]
-		processed += i
-	}
-	if i := wordLength(input); i > -1 {
-		// there was a domain name in the input
-		name := input[:i]
-
-
-	}
-
+	return true
 }
 
 func (*zone) isRec(input []byte) err {
