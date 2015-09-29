@@ -11,36 +11,39 @@ import (
 // returns "" and -1 if comment not finished, or no valid data in input
 func sliceComment(input []byte) ([]byte, int) {
 	pos := 0
+	comment := []byte("")
 	for pos < len(input) {
 		switch{
 		case unicode.IsSpace(input[pos]):
 			pos++
-		case input[pos] == '#':
-			if bytes.Index(input[pos:]) != -1{
-				pos += bytes.Index(input[pos:], "\n")
-				pos++
+		case input[pos] == '#' || input[pos] == ';':
+			if bytes.Index(input[pos:], []byte("\n") != -1{
+				nextLine := bytes.Index(input[pos:], []byte("\n"))
+				comment += bytes.TrimSpace(input[pos+1:nextLine])
+				pos += nextLine + 1
 			} else {
 				return []byte(""), -1
 			}
 		case input[pos] == '/':
 			switch input[pos+1] {
 			case '/':
-				if bytes.Index(input[pos:], "\n") != -1{
-					pos += bytes.Index(input[pos:], "\n")
-					pos++
+				if bytes.Index(input[pos:], []byte("\n")) != -1{
+					nextLine := bytes.Index(input[pos:], []byte("\n"))
+					comment += bytes.TrimSpace(input[pos+1:nextLine])
+					pos += nextLine + 1
 				} else {
 					return []byte(""), -1
 				}
 			case '*':
 				if bytes.Index(input[pos:], "*/") != -1{
-					pos += bytes.Index(input[pos:], "*/")
-					pos++
-					pos++
+					cutMark := bytes.Index(input[pos:], []byte("*/"))
+					comment += bytes.TrimSpace(input[pos +1:cutMark])
+					pos += cutMark + 1
 				} else {
 					return []byte(""), -1
 				}
 			default:
-				pos++
+				return []byte(""), -1
 			}
 		default:
 			return bytes.TrimSpace(input[:pos]), pos+1
